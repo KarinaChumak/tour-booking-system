@@ -20,6 +20,8 @@ const userRouter = require('./routes/userRouter');
 const reviewRouter = require('./routes/reviewRouter');
 const bookingRouter = require('./routes/bookingRoutes');
 
+const bookingController = require('./controllers/bookingController');
+
 const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
@@ -119,6 +121,12 @@ const limiter = rateLimit({
   message: 'Too many requests for this IP. Try again in 1 hour!',
 });
 app.use('/api', limiter);
+// This middleware needs the body to be in a raw stream format. So it has to be before calling body parser with express.json()
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout
+);
 
 // Body parser, reading data from the body into req.body
 app.use(express.json());
@@ -160,7 +168,6 @@ app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/booking', bookingRouter);
-
 app.all('*', (req, res, next) => {
   // if next() receives an argument, node knows that it's an error
   next(new AppError(`Can't find page ${req.originalUrl}`, 404));
