@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+/*eslint-disable*/
 const csp = require('express-csp');
 // const exp = require('constants');
 const express = require('express');
@@ -10,6 +10,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -137,6 +138,8 @@ app.use(
     ],
   })
 );
+
+app.use(compression());
 
 // Test middleware
 app.use((req, res, next) => {

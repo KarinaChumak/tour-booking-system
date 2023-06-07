@@ -50,7 +50,7 @@ module.exports = class Email {
     };
 
     const transport = this.createTransport();
-    console.log(transport);
+
     await transport.sendMail(mailOptions);
   }
 
