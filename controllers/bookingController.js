@@ -82,7 +82,7 @@ exports.createBookingCheckout = catchAsyncError(async (session) => {
   await Booking.create({ tour, user, price });
 });
 
-exports.webhookCheckout = (req, res, next) => {
+exports.webhookCheckout = catchAsyncError(async (req, res, next) => {
   const signature = req.headers['stripe-signature'];
   let event;
   try {
@@ -96,11 +96,11 @@ exports.webhookCheckout = (req, res, next) => {
   }
 
   if (event.type === 'checkout.session.completed') {
-    this.createBookingCheckout(event.data.object);
+    await this.createBookingCheckout(event.data.object);
   }
 
   res.status(200).json({ received: true });
-};
+});
 
 // exports.createBookingCheckout = catchAsyncError(async (req, res, next) => {
 //   const { tour, user, price } = req.query;
