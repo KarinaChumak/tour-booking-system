@@ -7,7 +7,7 @@ exports.getOverview = catchAsyncError(async (req, res) => {
   const tours = await Tour.find();
   // 1) get all the tour data from collection
   // 2) Build template
-  //
+
   res.status(200).render('overview', {
     title: 'All tours',
     tours,
