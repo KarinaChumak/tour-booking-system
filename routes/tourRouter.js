@@ -5,6 +5,7 @@ const reviewRouter = require('./reviewRouter');
 
 const router = express.Router();
 
+// TODO: change to slug instead of ID
 router.use('/:tourId/reviews', reviewRouter);
 
 router
@@ -28,25 +29,28 @@ router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
 
 router
   .route('/')
-  .get(authController.protect, tourController.getAllTours)
+  .get(
+    // authController.protect,
+    tourController.getAllTours
+  )
   .post(
-    authController.protect,
-    authController.restrictTo('admin', 'lead-guide'),
+    // authController.protect,
+    // authController.restrictTo('admin', 'lead-guide'),
     tourController.createTour
   );
 
 router
-  .route('/:id')
-  .get(tourController.getTour)
+  .route('/:slug')
+  .get(tourController.getTourBySlug)
   .delete(
-    authController.protect,
-    authController.restrictTo('admin', 'lead-guide'),
+    // authController.protect,
+    // authController.restrictTo('admin', 'lead-guide'),
 
     tourController.deleteTour
   )
   .patch(
-    authController.protect,
-    authController.restrictTo('admin', 'lead-guide'),
+    // authController.protect,
+    // authController.restrictTo('admin', 'lead-guide'),
     tourController.uploadTourImages,
     tourController.resizeTourImages,
     tourController.updateTour

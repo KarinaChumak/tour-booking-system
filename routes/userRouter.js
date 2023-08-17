@@ -13,7 +13,7 @@ router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
 // Adding protection middleware for all the next routes
-router.use(authController.protect);
+// router.use(authController.protect);
 
 router.patch('/updatePassword', authController.updatePassword);
 
@@ -27,7 +27,7 @@ router.patch(
 router.delete('/deleteMe', userController.deleteMe);
 
 // RESTRICTED ROUTES
-router.use(authController.restrictTo('admin'));
+// router.use(authController.restrictTo('admin'));
 router
   .route('/')
   .get(userController.getAllUsers)
