@@ -25,9 +25,6 @@ if (loginForm) {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    console.log(email);
-    console.log(password);
-
     login(email, password);
   });
 }
@@ -80,7 +77,7 @@ if (bookTourBtn) {
     e.preventDefault();
     e.target.textContent = 'Processing';
     const { tourId } = e.target.dataset;
-    console.log(tourId);
+
     bookTour(tourId);
   });
 }

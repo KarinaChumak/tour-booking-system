@@ -5,7 +5,6 @@ import { showAlert } from './alerts';
 
 // type is either a 'password' or 'data'
 export const updateSettings = async (data, type) => {
-  console.log(data);
   try {
     const res = await axios({
       method: 'PATCH',

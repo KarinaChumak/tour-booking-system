@@ -3,6 +3,8 @@ const validator = require('validator');
 const User = require('./userModel');
 const slugify = require('slugify');
 
+const storageUrl = process.env.IMAGE_STORAGE;
+
 const tourSchema = mongoose.Schema(
   {
     name: {
@@ -152,6 +154,12 @@ tourSchema.pre(/^find/, async function (next) {
     select: '-__v -passwordChangedAt',
   });
   next();
+});
+
+// Workaround to patch image paths
+tourSchema.post(/^find/, function (doc) {
+  doc.imageCover = `${storageUrl}/${doc.imageCover}`;
+  doc.images = doc.images.map((img) => `${storageUrl}/${img}`);
 });
 
 const Tour = mongoose.model('Tour', tourSchema);
