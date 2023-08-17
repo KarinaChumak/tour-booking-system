@@ -157,9 +157,22 @@ tourSchema.pre(/^find/, async function (next) {
 });
 
 // Workaround to patch image paths
-tourSchema.post(/^find/, function (doc) {
-  doc.imageCover = `${storageUrl}/${doc.imageCover}`;
-  doc.images = doc.images.map((img) => `${storageUrl}/${img}`);
+tourSchema.post(/find$|findById$|findOne$/, (doc) => {
+  const patchImgSrc = (img) => `${storageUrl}/${img}`;
+
+  if (doc.length) {
+    const newDoc = doc.map((i) =>
+      Object.assign(i, {
+        imageCover: patchImgSrc(i.imageCover),
+        images: i.images.map((image) => patchImgSrc(image)),
+      })
+    );
+
+    doc = newDoc;
+  } else {
+    doc.imageCover = patchImgSrc(doc.imageCover);
+    doc.images = doc.images.map((img) => patchImgSrc(img));
+  }
 });
 
 const Tour = mongoose.model('Tour', tourSchema);
