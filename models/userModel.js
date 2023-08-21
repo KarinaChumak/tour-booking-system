@@ -3,6 +3,8 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
+const storageUrl = process.env.IMAGE_STORAGE;
+
 const userSchema = mongoose.Schema({
   name: {
     type: String,
@@ -78,6 +80,23 @@ userSchema.pre('save', function (next) {
 userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
   next();
+});
+
+// Workaround to patch image paths
+userSchema.post(/find$|findById$|findOne$/, (doc) => {
+  const patchImgSrc = (img) => `${storageUrl}/${img}`;
+
+  if (doc.length) {
+    const newDoc = doc.map((i) =>
+      Object.assign(i, {
+        photo: patchImgSrc(i.photo),
+      })
+    );
+
+    doc = newDoc;
+  } else {
+    doc.photo = patchImgSrc(doc.photo);
+  }
 });
 
 // this.password will not be available because we set select: false, therefore we need to pass userPassword explicitly
