@@ -84,7 +84,7 @@ userSchema.pre(/^find/, function (next) {
 
 // Workaround to patch image paths
 userSchema.post(/find$|findById$|findOne$/, (doc) => {
-  const patchImgSrc = (img) => `${storageUrl}/${img}`;
+  const patchImgSrc = (img) => `${storageUrl}/users/${img}`;
 
   if (doc.length) {
     const newDoc = doc.map((i) =>

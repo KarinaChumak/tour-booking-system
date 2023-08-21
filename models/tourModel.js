@@ -158,7 +158,7 @@ tourSchema.pre(/^find/, async function (next) {
 
 // Workaround to patch image paths
 tourSchema.post(/find$|findById$|findOne$/, (doc) => {
-  const patchImgSrc = (img) => `${storageUrl}/${img}`;
+  const patchImgSrc = (img) => `${storageUrl}/tours/${img}`;
 
   if (doc.length) {
     const newDoc = doc.map((i) =>
