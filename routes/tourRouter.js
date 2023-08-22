@@ -8,6 +8,8 @@ const router = express.Router();
 // TODO: change to slug instead of ID
 router.use('/:tourId/reviews', reviewRouter);
 
+router.route('/tour/:slug').get(tourController.getTourBySlug);
+
 router
   .route('/top-5-tours')
   .get(tourController.aliasTopTours, tourController.getAllTours);
@@ -40,8 +42,8 @@ router
   );
 
 router
-  .route('/:slug')
-  .get(tourController.getTourBySlug)
+  .route('/:id')
+  .get(tourController.getTour)
   .delete(
     // authController.protect,
     // authController.restrictTo('admin', 'lead-guide'),
