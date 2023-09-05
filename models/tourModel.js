@@ -156,26 +156,26 @@ tourSchema.pre(/^find/, async function (next) {
   next();
 });
 
-// // Workaround to patch image paths
-tourSchema.post(/find$|findById$|findOne$/, (doc) => {
-  if (doc) {
-    const patchImgSrc = (img) => `${storageUrl}/tours/${img}`;
+// // Workaround to patch image paths (needed to store images on Supabase)
+// tourSchema.post(/find$|findById$|findOne$/, (doc) => {
+//   if (doc) {
+//     const patchImgSrc = (img) => `${storageUrl}/tours/${img}`;
 
-    if (doc.length) {
-      const newDoc = doc.map((i) =>
-        Object.assign(i, {
-          imageCover: patchImgSrc(i.imageCover),
-          images: i.images.map((image) => patchImgSrc(image)),
-        })
-      );
+//     if (doc.length) {
+//       const newDoc = doc.map((i) =>
+//         Object.assign(i, {
+//           imageCover: patchImgSrc(i.imageCover),
+//           images: i.images.map((image) => patchImgSrc(image)),
+//         })
+//       );
 
-      doc = newDoc;
-    } else {
-      doc.imageCover = patchImgSrc(doc.imageCover);
-      doc.images = doc.images.map((img) => patchImgSrc(img));
-    }
-  }
-});
+//       doc = newDoc;
+//     } else {
+//       doc.imageCover = patchImgSrc(doc.imageCover);
+//       doc.images = doc.images.map((img) => patchImgSrc(img));
+//     }
+//   }
+// });
 
 const Tour = mongoose.model('Tour', tourSchema);
 

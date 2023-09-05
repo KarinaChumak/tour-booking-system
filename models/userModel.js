@@ -82,22 +82,22 @@ userSchema.pre(/^find/, function (next) {
   next();
 });
 
-// Workaround to patch image paths
-userSchema.post(/find$|findById$|findOne$/, (doc) => {
-  const patchImgSrc = (img) => `${storageUrl}/users/${img}`;
+// Workaround to patch image paths (to store images on supabase)
+// userSchema.post(/find$|findById$|findOne$/, (doc) => {
+//   const patchImgSrc = (img) => `${storageUrl}/users/${img}`;
 
-  if (doc.length) {
-    const newDoc = doc.map((i) =>
-      Object.assign(i, {
-        photo: patchImgSrc(i.photo),
-      })
-    );
+//   if (doc.length) {
+//     const newDoc = doc.map((i) =>
+//       Object.assign(i, {
+//         photo: patchImgSrc(i.photo),
+//       })
+//     );
 
-    doc = newDoc;
-  } else {
-    doc.photo = patchImgSrc(doc.photo);
-  }
-});
+//     doc = newDoc;
+//   } else {
+//     doc.photo = patchImgSrc(doc.photo);
+//   }
+// });
 
 // this.password will not be available because we set select: false, therefore we need to pass userPassword explicitly
 userSchema.methods.passwordIsCorrect = async function (
