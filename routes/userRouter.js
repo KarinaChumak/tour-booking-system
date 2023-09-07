@@ -18,6 +18,8 @@ router.patch('/resetPassword/:token', authController.resetPassword);
 router.patch('/updatePassword', authController.updatePassword);
 
 router.get('/me', userController.getMe, userController.getUser);
+router.get('/guides', userController.getMe, userController.getUser);
+
 router.patch(
   '/updateMe',
   userController.uploadUserPhoto,

@@ -1,12 +1,19 @@
 /* eslint-disable arrow-body-style */
 /* eslint-disable node/no-unsupported-features/es-syntax */
-const Tour = require('../models/tourModel');
-const AppError = require('../utils/appError');
+const supabase = require('@supabase/supabase-js');
 const multer = require('multer');
 const sharp = require('sharp');
 
+const Tour = require('../models/tourModel');
+const AppError = require('../utils/appError');
 const catchAsyncError = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
+
+const supabaseUrl = 'https://vpwbntzlkfojlpwxfsnf.supabase.co';
+const supabaseKey = process.env.SUPABASE_API_KEY;
+
+console.log(supabaseKey);
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 const multerStorage = multer.memoryStorage();
 
@@ -24,35 +31,48 @@ exports.uploadTourImages = upload.fields([
   { name: 'images', maxCount: 3 },
 ]);
 
+// change this function to resize and upload to supabase
 exports.resizeTourImages = catchAsyncError(async (req, res, next) => {
-  if (!req.files.imageCover || !req.files.images) return next();
+  if (!req.files.imageCover) return next();
+  // if (!req.files.imageCover || !req.files.images) return next();
 
   // 1) Process the cover image
+
   req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
-  await sharp(req.files.imageCover[0].buffer)
+
+  const resizedImageBuffer = await sharp(req.files.imageCover[0].buffer)
     .resize(2000, 1333)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`public/img/tours/${req.body.imageCover}`);
+    .toBuffer();
+  // .toFile(`public/img/tours/${req.body.imageCover}`);
 
-  // 2) Process all images in a loop
-  req.body.images = [];
+  const { error: storageError } = await supabaseClient.storage
+    .from('tours')
+    .upload(req.body.imageCover, resizedImageBuffer, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: 'image/webp',
+    });
 
-  const promises = req.files.images.map(async (file, index) => {
-    const filename = `tour-${req.params.id}-${Date.now()}-image-${
-      index + 1
-    }.jpeg`;
+  // // 2) Process all images in a loop
+  // req.body.images = [];
 
-    await sharp(file.buffer)
-      .resize(2000, 1333)
-      .toFormat('jpeg')
-      .jpeg({ quality: 90 })
-      .toFile(`public/img/tours/${filename}`);
+  // const promises = req.files.images.map(async (file, index) => {
+  //   const filename = `tour-${req.params.id}-${Date.now()}-image-${
+  //     index + 1
+  //   }.jpeg`;
 
-    req.body.images.push(filename);
-  });
+  //   await sharp(file.buffer)
+  //     .resize(2000, 1333)
+  //     .toFormat('jpeg')
+  //     .jpeg({ quality: 90 })
+  //     .toFile(`public/img/tours/${filename}`);
 
-  await Promise.all(promises);
+  //   req.body.images.push(filename);
+  // });
+
+  // await Promise.all(promises);
   next();
 });
 

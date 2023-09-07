@@ -19,6 +19,7 @@ const tourRouter = require('./routes/tourRouter');
 const userRouter = require('./routes/userRouter');
 const reviewRouter = require('./routes/reviewRouter');
 const bookingRouter = require('./routes/bookingRoutes');
+const geocodingRouter = require('./routes/geocodingRoutes');
 
 const bookingController = require('./controllers/bookingController');
 
@@ -168,6 +169,8 @@ app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/booking', bookingRouter);
+app.use('/api/v1/geocoding', geocodingRouter);
+
 app.all('*', (req, res, next) => {
   // if next() receives an argument, node knows that it's an error
   next(new AppError(`Can't find page ${req.originalUrl}`, 404));
