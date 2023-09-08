@@ -12,7 +12,6 @@ const factory = require('./handlerFactory');
 const supabaseUrl = 'https://vpwbntzlkfojlpwxfsnf.supabase.co';
 const supabaseKey = process.env.SUPABASE_API_KEY;
 
-console.log(supabaseKey);
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 const multerStorage = multer.memoryStorage();
@@ -28,51 +27,65 @@ const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 
 exports.uploadTourImages = upload.fields([
   { name: 'imageCover', maxCount: 1 },
-  { name: 'images', maxCount: 3 },
+  { name: 'images', maxCount: 10 },
 ]);
 
 // change this function to resize and upload to supabase
 exports.resizeTourImages = catchAsyncError(async (req, res, next) => {
   if (!req.files.imageCover) return next();
+
   // if (!req.files.imageCover || !req.files.images) return next();
 
   // 1) Process the cover image
 
   req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
 
-  const resizedImageBuffer = await sharp(req.files.imageCover[0].buffer)
+  const resizedCoverImageBuffer = await sharp(req.files.imageCover[0].buffer)
     .resize(2000, 1333)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
     .toBuffer();
   // .toFile(`public/img/tours/${req.body.imageCover}`);
 
-  const { error: storageError } = await supabaseClient.storage
+  const { error: storageCoverError } = await supabaseClient.storage
     .from('tours')
-    .upload(req.body.imageCover, resizedImageBuffer, {
+    .upload(req.body.imageCover, resizedCoverImageBuffer, {
       cacheControl: '3600',
       upsert: false,
       contentType: 'image/webp',
     });
 
-  // // 2) Process all images in a loop
-  // req.body.images = [];
+  // 2) Process all images in a loop
 
-  // const promises = req.files.images.map(async (file, index) => {
-  //   const filename = `tour-${req.params.id}-${Date.now()}-image-${
-  //     index + 1
-  //   }.jpeg`;
+  if (req.files.images) {
+    req.body.images = [];
 
-  //   await sharp(file.buffer)
-  //     .resize(2000, 1333)
-  //     .toFormat('jpeg')
-  //     .jpeg({ quality: 90 })
-  //     .toFile(`public/img/tours/${filename}`);
+    const promises = req.files.images.map(async (file, index) => {
+      const filename = `tour-${req.params.id}-${Date.now()}-image-${
+        index + 1
+      }.jpeg`;
 
-  //   req.body.images.push(filename);
-  // });
+      const resizedImgBuffer = await sharp(file.buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toBuffer();
+      // .toFile(`public/img/tours/${filename}`);
 
-  // await Promise.all(promises);
+      const { error: storageImgError } = await supabaseClient.storage
+        .from('tours')
+        .upload(filename, resizedCoverImageBuffer, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: 'image/webp',
+        });
+
+      req.body.images.push(filename);
+    });
+
+    await Promise.all(promises);
+  }
+
   next();
 });
 
