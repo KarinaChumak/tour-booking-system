@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const User = require('./userModel');
 const slugify = require('slugify');
+const mongoosePaginate = require('mongoose-paginate');
 
 const storageUrl = process.env.IMAGE_STORAGE;
 
@@ -10,7 +11,7 @@ const tourSchema = mongoose.Schema(
     name: {
       type: String,
       required: [true, 'A tour must have a name'],
-      unique: true,
+
       trim: true,
       maxlength: [40, 'A tour name must have <= 40 characters'],
       minlength: [10, 'A tour name must have >= 10 characters'],
@@ -58,6 +59,19 @@ const tourSchema = mongoose.Schema(
         message: 'Discount price ({VALUE})should be below the regular price',
       },
     },
+
+    numPeopleBooked: {
+      type: Number,
+      validate: {
+        validator: function (val) {
+          // Will only work with new document creation, not with updating
+          return val < this.maxGroupSize;
+        },
+        message:
+          'Number of people who booked the tour ({VALUE})should be less than maximum group size',
+      },
+      default: 0,
+    },
     summary: {
       type: String,
       trim: true,
@@ -75,9 +89,13 @@ const tourSchema = mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now(),
-      select: false,
     },
     startDates: [Date],
+
+    published: {
+      type: Boolean,
+      default: false,
+    },
 
     startLocation: {
       // GeoJSON
@@ -91,20 +109,40 @@ const tourSchema = mongoose.Schema(
       description: String,
     },
 
-    locations: [
+    program: [
       {
-        type: {
-          type: String,
-          default: 'Point',
-          enum: ['Point'],
-        },
-
-        coordinates: [Number],
-        address: String,
-        description: String,
         day: Number,
+        dayDescription: String,
+        locations: [
+          {
+            type: {
+              type: String,
+              default: 'Point',
+              enum: ['Point'],
+            },
+
+            coordinates: [Number],
+            address: String,
+            description: String,
+          },
+        ],
       },
     ],
+    // locations: [
+    //   {
+    //     type: {
+    //       type: String,
+    //       default: 'Point',
+    //       enum: ['Point'],
+    //     },
+
+    //     coordinates: [Number],
+    //     address: String,
+    //     description: String,
+    //     day: Number,
+    //   },
+    // ],
+
     // For embedding guides (users) into this document
     // guides: Array,
     // For child-referencing
@@ -116,6 +154,7 @@ const tourSchema = mongoose.Schema(
   }
 );
 
+tourSchema.plugin(mongoosePaginate);
 // assuming that people would often sort by price, so it's efficient to index this field
 // tourSchema.index({ price: 1 }); // - single index
 tourSchema.index({ price: 1, ratingsAverage: -1 }); //-compound index

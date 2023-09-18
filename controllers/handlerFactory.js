@@ -29,11 +29,10 @@ exports.updateOne = (Model) =>
 
 exports.createOne = (Model) =>
   catchAsyncError(async (req, res, next) => {
-    console.log(req.body);
     const newDoc = await Model.create(req.body);
     res.status(201).json({
       status: 'success',
-      data: { tour: newDoc },
+      data: newDoc,
     });
   });
 
@@ -52,9 +51,34 @@ exports.getOne = (Model, populateOptions) =>
     res.status(200).json({
       status: 'success',
       requestedAt: req.requestTime,
-      data: { doc },
+      data: doc,
     });
   });
+
+// exports.getAll = (Model) =>
+//   catchAsyncError(async (req, res, next) => {
+//     // To allow  nested GET reviews on tour, won't break other code
+//     let filter = {};
+//     if (req.params.tourId) {
+//       filter = { tour: req.params.tourId };
+//     }
+//     const features = new APIFeatures(Model.find(filter), req.query)
+//       .filter()
+//       .sort()
+//       .limitFields()
+//       .paginate();
+
+//     const documents = await features.query;
+
+//     const resultsQuery = await documents.count();
+
+//     res.status(200).json({
+//       status: 'success',
+
+//       results: resultsQuery,
+//       data: { documents },
+//     });
+//   });
 
 exports.getAll = (Model) =>
   catchAsyncError(async (req, res, next) => {
@@ -63,17 +87,31 @@ exports.getAll = (Model) =>
     if (req.params.tourId) {
       filter = { tour: req.params.tourId };
     }
-    const features = new APIFeatures(Model.find(filter), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
+    // 1) Filtering
+    const queryObj = { ...req.query, ...filter };
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    excludedFields.forEach((el) => delete queryObj[el]);
 
-    const documents = await features.query;
+    // 3) Sorting
+    let sortBy = '-createdAt name';
+    if (req.query.sort) {
+      sortBy = req.query.sort.split(',').join(' ');
+    }
+
+    // 4)Pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+
+    const results = await Model.paginate(queryObj, {
+      sort: sortBy,
+      page,
+      limit,
+    });
 
     res.status(200).json({
       status: 'success',
-      results: documents.length,
-      data: { documents },
+      results: results.docs.length,
+      resultsTotal: results.total,
+      data: results.docs,
     });
   });

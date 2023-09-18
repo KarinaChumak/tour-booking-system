@@ -1,6 +1,7 @@
 /* eslint-disable prefer-arrow-callback */
 const mongoose = require('mongoose');
 const Tour = require('./tourModel');
+const mongoosePaginate = require('mongoose-paginate');
 
 const reviewSchema = mongoose.Schema(
   {
@@ -37,6 +38,7 @@ const reviewSchema = mongoose.Schema(
   }
 );
 
+reviewSchema.plugin(mongoosePaginate);
 // to prevent users from writing multiple reviews on the same tour
 reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
 

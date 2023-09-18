@@ -1,6 +1,5 @@
 /* eslint-disable arrow-body-style */
 /* eslint-disable node/no-unsupported-features/es-syntax */
-const supabase = require('@supabase/supabase-js');
 const multer = require('multer');
 const sharp = require('sharp');
 
@@ -9,11 +8,7 @@ const AppError = require('../utils/appError');
 const catchAsyncError = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 
-const supabaseUrl = 'https://vpwbntzlkfojlpwxfsnf.supabase.co';
-const supabaseKey = process.env.SUPABASE_API_KEY;
-
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
+const supabaseClient = require('../lib/supabase');
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
@@ -32,7 +27,7 @@ exports.uploadTourImages = upload.fields([
 
 // change this function to resize and upload to supabase
 exports.resizeTourImages = catchAsyncError(async (req, res, next) => {
-  if (!req.files.imageCover) return next();
+  if (!req.files?.imageCover) return next();
 
   // if (!req.files.imageCover || !req.files.images) return next();
 

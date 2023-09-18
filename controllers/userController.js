@@ -4,6 +4,7 @@ const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
 const multer = require('multer');
 const sharp = require('sharp');
+const supabaseClient = require('../lib/supabase');
 
 // const multerStorage = multer.diskStorage({
 //   destination: (req, file, cb) => {
@@ -31,12 +32,20 @@ exports.uploadUserPhoto = upload.single('photo');
 exports.resizeUserPhoto = catchAsyncError(async (req, res, next) => {
   if (!req.file) return next();
   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-  await sharp(req.file.buffer)
+  const resizedPhotoBuffer = await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`public/img/users/${req.file.filename}`);
+    .toBuffer();
+  // .toFile(`public/img/users/${req.file.filename}`);
 
+  const { error: storageUploadError } = await supabaseClient.storage
+    .from('users')
+    .upload(req.file.filename, resizedPhotoBuffer, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: 'image/webp',
+    });
   next();
 });
 
@@ -98,9 +107,4 @@ exports.getUser = factory.getOne(User);
 exports.getAllUsers = factory.getAll(User);
 exports.deleteUser = factory.deleteOne(User);
 exports.updateUser = factory.updateOne(User);
-exports.createUser = (req, res, next) => {
-  res.status(500).json({
-    status: 'error',
-    message: `This route isn't defined. Please use /signUp instead`,
-  });
-};
+exports.createUser = factory.createOne(User);

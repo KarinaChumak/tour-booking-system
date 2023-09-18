@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const mongoosePaginate = require('mongoose-paginate');
 
 const storageUrl = process.env.IMAGE_STORAGE;
 
@@ -25,6 +26,14 @@ const userSchema = mongoose.Schema({
     type: String,
     enum: ['user', 'guide', 'lead-guide', 'admin'],
     default: 'user',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
+
+  phone: {
+    type: String,
   },
 
   password: {
@@ -57,9 +66,19 @@ const userSchema = mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  isGuide: {
+    type: Boolean,
+  },
 });
 
+userSchema.plugin(mongoosePaginate);
 // schema middleware
+
+userSchema.pre('save', async function (next) {
+  this.isGuide = this.role === 'guide' || this.role === 'lead-guide';
+  next();
+});
+
 userSchema.pre('save', async function (next) {
   // in case we're updating email or other fields, then this middleware will also be triggered but we don't want to re-encrypt the password
   if (!this.isModified('password')) return next();
@@ -86,7 +105,7 @@ userSchema.pre(/^find/, function (next) {
 userSchema.post(/find$|findById$|findOne$/, (doc) => {
   const patchImgSrc = (img) => `${storageUrl}/users/${img}`;
 
-  if (doc.length) {
+  if (doc?.length) {
     const newDoc = doc.map((i) =>
       Object.assign(i, {
         photo: patchImgSrc(i.photo),
@@ -95,7 +114,7 @@ userSchema.post(/find$|findById$|findOne$/, (doc) => {
 
     doc = newDoc;
   } else {
-    doc.photo = patchImgSrc(doc.photo);
+    doc.photo = patchImgSrc(doc?.photo);
   }
 });
 

@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const Tour = require('./tourModel');
+const mongoosePaginate = require('mongoose-paginate');
 
 const bookingSchema = mongoose.Schema({
   tour: {
@@ -25,6 +27,11 @@ const bookingSchema = mongoose.Schema({
   },
 });
 
+bookingSchema.plugin(mongoosePaginate);
+bookingSchema.statics.updateBookedInfo = async function (tourId) {
+  await Tour.findByIdAndUpdate(tourId, { $inc: { numPeopleBooked: 1 } });
+};
+
 bookingSchema.pre(/^find/, function (next) {
   this.populate('user').populate({
     path: 'tour',
@@ -32,6 +39,10 @@ bookingSchema.pre(/^find/, function (next) {
   });
 
   next();
+});
+
+bookingSchema.post('save', function () {
+  this.constructor.updateBookedInfo(this.tour);
 });
 
 bookingSchema.virtual('tourObj', {
