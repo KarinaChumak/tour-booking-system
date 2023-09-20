@@ -32,6 +32,7 @@ exports.uploadUserPhoto = upload.single('photo');
 exports.resizeUserPhoto = catchAsyncError(async (req, res, next) => {
   if (!req.file) return next();
   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
   const resizedPhotoBuffer = await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
@@ -46,6 +47,8 @@ exports.resizeUserPhoto = catchAsyncError(async (req, res, next) => {
       upsert: false,
       contentType: 'image/webp',
     });
+
+  console.log(storageUploadError);
   next();
 });
 

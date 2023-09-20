@@ -70,12 +70,9 @@ exports.getOne = (Model, populateOptions) =>
 
 //     const documents = await features.query;
 
-//     const resultsQuery = await documents.count();
-
 //     res.status(200).json({
 //       status: 'success',
 
-//       results: resultsQuery,
 //       data: { documents },
 //     });
 //   });
@@ -88,9 +85,14 @@ exports.getAll = (Model) =>
       filter = { tour: req.params.tourId };
     }
     // 1) Filtering
-    const queryObj = { ...req.query, ...filter };
+    let queryObj = { ...req.query, ...filter };
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
+
+    // 1)B Advanced filtering
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    queryObj = JSON.parse(queryStr);
 
     // 3) Sorting
     let sortBy = '-createdAt name';

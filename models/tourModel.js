@@ -203,15 +203,15 @@ tourSchema.post(/find$|findById$|findOne$/, (doc) => {
     if (doc.length) {
       const newDoc = doc.map((i) =>
         Object.assign(i, {
-          imageCover: patchImgSrc(i.imageCover),
-          images: i.images.map((image) => patchImgSrc(image)),
+          imageCover: patchImgSrc(i?.imageCover),
+          images: i?.images?.map((image) => patchImgSrc(image)),
         })
       );
 
       doc = newDoc;
     } else {
-      doc.imageCover = patchImgSrc(doc.imageCover);
-      doc.images = doc.images.map((img) => patchImgSrc(img));
+      doc.imageCover = patchImgSrc(doc?.imageCover);
+      doc.images = doc?.images?.map((img) => patchImgSrc(img));
     }
   }
 });

@@ -35,7 +35,7 @@ bookingSchema.statics.updateBookedInfo = async function (tourId) {
 bookingSchema.pre(/^find/, function (next) {
   this.populate('user').populate({
     path: 'tour',
-    select: 'name',
+    // select: 'name ',
   });
 
   next();

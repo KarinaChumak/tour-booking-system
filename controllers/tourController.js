@@ -27,6 +27,7 @@ exports.uploadTourImages = upload.fields([
 
 // change this function to resize and upload to supabase
 exports.resizeTourImages = catchAsyncError(async (req, res, next) => {
+  console.log(req.files);
   if (!req.files?.imageCover) return next();
 
   // if (!req.files.imageCover || !req.files.images) return next();
